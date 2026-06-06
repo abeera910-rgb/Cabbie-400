@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Shift</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --fg: #f0ece2;
+      --accent: #f0ece2;
+      --transition: 0.6s;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg);
+      transition: background-color var(--transition) ease;
+      font-family: 'Courier Prime', monospace;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 12vw, 9rem);
+      letter-spacing: 0.08em;
+      color: var(--fg);
+      mix-blend-mode: difference;
+      user-select: none;
+      transition: color var(--transition) ease;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .hex-display {
+      font-family: 'Courier Prime', monospace;
+      font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+      letter-spacing: 0.3em;
+      color: var(--fg);
+      mix-blend-mode: difference;
+      opacity: 0.6;
+      margin-top: 0.5rem;
+      transition: opacity 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .btn {
+      margin-top: 3rem;
+      padding: 1rem 3rem;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.2em;
+      background: transparent;
+      color: var(--fg);
+      border: 2px solid var(--fg);
+      cursor: crosshair;
+      mix-blend-mode: difference;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, letter-spacing 0.3s ease;
+      outline: none;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--fg);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+      z-index: -1;
+    }
+
+    .btn:hover::before { transform: scaleX(1); }
+    .btn:hover { letter-spacing: 0.3em; }
+    .btn:active { transform: scale(0.96); }
+
+    /* Ripple */
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      transform: scale(0);
+      animation: ripple-out 0.7s ease-out forwards;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @keyframes ripple-out {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Click counter */
+    .counter {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--fg);
+      mix-blend-mode: difference;
+      opacity: 0.4;
+      text-transform: uppercase;
+    }
+
+    /* Decorative corners */
+    .corner {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      opacity: 0.25;
+      mix-blend-mode: difference;
+    }
+    .corner::before, .corner::after {
+      content: '';
+      position: absolute;
+      background: var(--fg);
+    }
+    .corner::before { width: 2px; height: 100%; }
+    .corner::after  { width: 100%; height: 2px; }
+    .corner.tl { top: 1.5rem; left: 1.5rem; }
+    .corner.tr { top: 1.5rem; right: 1.5rem; transform: scaleX(-1); }
+    .corner.bl { bottom: 1.5rem; left: 1.5rem; transform: scaleY(-1); }
+    .corner.br { bottom: 1.5rem; right: 1.5rem; transform: scale(-1); }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="label" id="label">COLOUR</div>
+  <div class="hex-display" id="hex">#0d0d0d</div>
+  <button class="btn" id="btn" onclick="changeColor(event)">SHIFT</button>
+
+  <div class="counter" id="counter">0 shifts</div>
+
+  <script>
+    let count = 0;
+
+    function randomHex() {
+      return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+    }
+
+    function changeColor(e) {
+      const color = randomHex();
+      document.body.style.setProperty('--bg', color);
+      document.getElementById('hex').textContent = color.toUpperCase();
+
+      count++;
+      const c = document.getElementById('counter');
+      c.textContent = count + (count === 1 ? ' shift' : ' shifts');
+
+      // Ripple
+      const r = document.createElement('div');
+      r.className = 'ripple';
+      const size = Math.max(window.innerWidth, window.innerHeight) * 2;
+      r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - size/2}px;top:${e.clientY - size/2}px`;
+      document.body.appendChild(r);
+      r.addEventListener('animationend', () => r.remove());
+    }
+  </script>
+</body>
+</html>
